@@ -128,13 +128,13 @@ public class RouteConfig {
                 Map<String, String> loginParams = JsonUtil.json2object(config, new TypeToken<Map<String, String>>() {
                 });
                 if (loginParams == null) {
-                    return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error login info");
+                    return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "登录失败");
                 }
 
                 String username = loginParams.get("username");
                 String password = loginParams.get("password");
                 if (username == null || password == null) {
-                    return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error username or password");
+                    return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "用户名或者密码错误");
                 }
 
                 if (username.equals(ProxyConfig.getInstance().getConfigAdminUsername()) && password.equals(ProxyConfig.getInstance().getConfigAdminPassword())) {
@@ -142,7 +142,7 @@ public class RouteConfig {
                     return ResponseInfo.build(token);
                 }
 
-                return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "Error username or password");
+                return ResponseInfo.build(ResponseInfo.CODE_INVILID_PARAMS, "用户名或者密码错误");
             }
         });
 

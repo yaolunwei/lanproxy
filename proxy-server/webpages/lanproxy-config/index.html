@@ -15,7 +15,7 @@
 <body>
 	<div class="layui-layout layui-layout-admin">
 		<div class="layui-header">
-			<div class="layui-logo">LanProxy Configuration</div>
+			<div class="layui-logo"></div>
 			<ul class="layui-nav layui-layout-right">
 				<li class="layui-nav-item"><a href="javascript:;"
 					class="logout"></a></li>
@@ -163,6 +163,7 @@
             encoding: 'UTF-8',
             callback : function() {//加载成功后设置显示内容
                 $('title').html($.i18n.prop('title'));
+                $('.layui-logo').html($.i18n.prop('layui-logo'));
                 $(".layui-footer").html($.i18n.prop('title'));
                 $(".logout").html($.i18n.prop('logout'));
                 layui.use('layer', function() {
