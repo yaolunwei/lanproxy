@@ -1,4 +1,6 @@
+*.iml
 *.class
+target
 /target
 /distribution
 # Mobile Tools for Java (J2ME)
