@@ -80,6 +80,12 @@ $(".add").click(function(){
     });
 });
 
+api_invoke("/config/generateFreePort", clientList, function(data) {
+    if (data.code == 20000) {
+        $("input[name='inetPort']").val(data.data);
+    }
+});
+
 $(".back").click(function(){
 	load_page("html/lan/list.html");
 });

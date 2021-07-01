@@ -1,6 +1,7 @@
 package org.fengfei.lanproxy.server.config.web.routes;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -93,6 +94,15 @@ public class RouteConfig {
             }
         });
 
+        // 生成空闲端口
+        ApiRoute.addRoute("/config/generateFreePort", new RequestHandler() {
+
+            @Override
+            public ResponseInfo request(FullHttpRequest request) {
+                return ResponseInfo.build(ProxyConfig.getInstance().generateFreePort());
+            }
+        });
+
         // 更新配置
         ApiRoute.addRoute("/config/update", new RequestHandler() {
 
@@ -100,7 +110,7 @@ public class RouteConfig {
             public ResponseInfo request(FullHttpRequest request) {
                 byte[] buf = new byte[request.content().readableBytes()];
                 request.content().readBytes(buf);
-                String config = new String(buf, Charset.forName("UTF-8"));
+                String config = new String(buf, StandardCharsets.UTF_8);
                 List<Client> clients = JsonUtil.json2object(config, new TypeToken<List<Client>>() {
                 });
                 if (clients == null) {

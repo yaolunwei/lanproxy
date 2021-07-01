@@ -1,5 +1,7 @@
 package org.fengfei.lanproxy.server.handlers;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.fengfei.lanproxy.protocol.Constants;
@@ -134,7 +136,10 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String clientKey = proxyMessage.getUri();
         List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
         if (ports == null) {
-            logger.info("error clientKey {}, {}", clientKey, ctx.channel());
+            String clientName = new String(proxyMessage.getData(), StandardCharsets.UTF_8);
+            ProxyConfig.getInstance().add(clientName, clientKey, 1, new ArrayList<ProxyConfig.ClientProxyMapping>());
+//            logger.info("error clientKey {}, {}", clientKey, ctx.channel());
+            logger.info("Auto add client {}, {}", clientKey, ctx.channel());
             ctx.channel().close();
             return;
         }

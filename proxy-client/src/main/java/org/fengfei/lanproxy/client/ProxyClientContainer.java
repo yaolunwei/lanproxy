@@ -1,5 +1,6 @@
 package org.fengfei.lanproxy.client;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLContext;
@@ -114,6 +115,7 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     ProxyMessage proxyMessage = new ProxyMessage();
                     proxyMessage.setType(ProxyMessage.C_TYPE_AUTH);
                     proxyMessage.setUri(config.getStringValue("client.key"));
+                    proxyMessage.setData(config.getStringValue("client.name", proxyMessage.getUri()).getBytes(StandardCharsets.UTF_8));
                     future.channel().writeAndFlush(proxyMessage);
                     sleepTimeMill = 1000;
                     logger.info("connect proxy server success, {}", future.channel());

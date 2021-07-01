@@ -1,12 +1,10 @@
 package org.fengfei.lanproxy.server.config;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.Serializable;
+import java.io.*;
+import java.net.Socket;
+import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -171,7 +169,7 @@ public class ProxyConfig implements Serializable {
                 }
 
                 in.close();
-                proxyMappingConfigJson = new String(out.toByteArray(), Charset.forName("UTF-8"));
+                proxyMappingConfigJson = new String(out.toByteArray(), StandardCharsets.UTF_8);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -197,6 +195,13 @@ public class ProxyConfig implements Serializable {
             clientInetPortMapping.put(clientKey, ports);
             for (ClientProxyMapping mapping : mappings) {
                 Integer port = mapping.getInetPort();
+                if (port==null || port==-1) {
+                    Integer gPort = generateFreePort();
+                    if (gPort!=null) {
+                        port = gPort;
+                        mapping.setInetPort(port);
+                    }
+                }
                 ports.add(port);
                 if (inetPortLanInfoMapping.containsKey(port)) {
                     throw new IllegalArgumentException("一个公网端口只能映射一个后端信息，不能重复: " + port);
@@ -214,7 +219,7 @@ public class ProxyConfig implements Serializable {
         if (proxyMappingConfigJson != null) {
             try {
                 FileOutputStream out = new FileOutputStream(file);
-                out.write(proxyMappingConfigJson.getBytes(Charset.forName("UTF-8")));
+                out.write(proxyMappingConfigJson.getBytes(StandardCharsets.UTF_8));
                 out.flush();
                 out.close();
             } catch (Exception e) {
@@ -223,6 +228,28 @@ public class ProxyConfig implements Serializable {
         }
 
         notifyconfigChangedListeners();
+    }
+
+    /**
+     * 添加客户端
+     *
+     * @param client client
+     */
+    public void add(Client client) {
+        if (client!=null && client.clientKey!=null) {
+            clients.add(client);
+        }
+        String json = JsonUtil.object2json(clients);
+        update(json);
+    }
+
+    public void add(String name, String clientKey, int status, List<ClientProxyMapping> mappings) {
+        Client client = new Client();
+        client.name = name;
+        client.clientKey = clientKey;
+        client.status = status;
+        client.proxyMappings = mappings;
+        add(client);
     }
 
     /**
@@ -296,6 +323,31 @@ public class ProxyConfig implements Serializable {
 
         return ports;
     }
+
+    /**
+     * 生成一个空闲端口
+     *
+     * @return
+     */
+    public Integer generateFreePort() {
+        Socket socket = null;
+        int port = serverPort;
+        while (++port < 65535) {
+            if (inetPortLanInfoMapping.containsKey(port)) {
+                continue;
+            }
+
+            try {
+                socket = new Socket("localhost", port);
+                socket.close();
+            } catch (Exception e) {
+                socket = null;
+                return port;
+            }
+        }
+
+        return null;
+    };
 
     public static ProxyConfig getInstance() {
         return instance;

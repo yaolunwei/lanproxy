@@ -33,7 +33,12 @@
 </table>
 </script>
 <script>
-    $(".tab-title").html(clientList[clientIndex].name + " - " + $.i18n.prop('lan.proxyconfig'));
+    if (clientList[clientIndex].status==0) {
+        $(".tab-title").html("<font color='#000000'>" + clientList[clientIndex].name + " - " + $.i18n.prop('lan.proxyconfig') + " - " + $.i18n.prop('client.status.offline') + "</font>");
+    } else {
+        $(".tab-title").html("<font color='#009688'>" + clientList[clientIndex].name + " - " + $.i18n.prop('lan.proxyconfig') + " - " + $.i18n.prop('client.status.online') +"</font>");
+    }
+
     $(".mapping-add").html($.i18n.prop('lan.addnewconfig'));
 	var html = template($("#mapping-tpl").html(), {
 		data : clientList[clientIndex].proxyMappings
@@ -75,6 +80,7 @@
 	});
 
 	$(".mapping-add").click(function() {
+	    update_menu();
 		load_page("html/lan/add.html");
 	});
 </script>

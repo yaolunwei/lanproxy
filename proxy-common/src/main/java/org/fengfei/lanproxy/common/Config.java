@@ -2,6 +2,8 @@ package org.fengfei.lanproxy.common;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
@@ -29,7 +31,7 @@ public class Config {
     private void initConfig(String configFile) {
         InputStream is = Config.class.getClassLoader().getResourceAsStream(configFile);
         try {
-            configuration.load(is);
+            configuration.load(new InputStreamReader(is, StandardCharsets.UTF_8));
             is.close();
         } catch (IOException ex) {
             throw new RuntimeException(ex);
