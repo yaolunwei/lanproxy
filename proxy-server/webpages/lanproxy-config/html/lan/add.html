@@ -21,6 +21,12 @@
           <input type="text" name="lan" autocomplete="off" placeholder="" class="layui-input">
         </div>
       </div>
+        <div class="layui-form-item">
+            <label class="layui-form-label i18n-lan-remark"></label>
+            <div class="layui-input-block">
+                <input type="text" name="remark" autocomplete="off" placeholder="" class="layui-input">
+            </div>
+        </div>
        <div class="layui-form-item">
 	    <div class="layui-input-block">
 	      <button class="layui-btn add"></button>
@@ -30,12 +36,15 @@
     </div>
 </div>
 <script>
+
 $(".i18n-new-proxy").html($.i18n.prop('lan.addnewconfig'));
 $(".i18n-lan-name").html($.i18n.prop('lan.name'));
 $(".i18n-lan-inetport").html($.i18n.prop('lan.inetport'));
 $(".i18n-lan-ip").html($.i18n.prop('lan.ip'));
+$(".i18n-lan-remark").html($.i18n.prop('lan.remark'));
 $("input[name='inetPort']").attr("placeholder", $.i18n.prop('lan.inetport.placeholder'));
 $("input[name='lan']").attr("placeholder", $.i18n.prop('lan.ip.placeholder'));
+$("input[name='remark']").attr("placeholder", $.i18n.prop('lan.remark.placeholder'));
 $(".add").html($.i18n.prop('public.submit'));
 $(".back").html($.i18n.prop('public.back'));
 $(".add").click(function(){
@@ -64,10 +73,13 @@ $(".add").click(function(){
         return;
     }
 
+    var remark = $("input[name='remark']").val();
+
     clientList[clientIndex].proxyMappings.push({
     	name:name,
     	inetPort:inetPort,
-    	lan:lan
+    	lan:lan,
+        remark:remark
     });
 
     api_invoke("/config/update", clientList, function(data) {

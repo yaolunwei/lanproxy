@@ -15,6 +15,7 @@
             <th class="i18n-lan-inetport"></th>
             <th class="i18n-lan-ip"></th>
             <th class="i18n-lan-options"></th>
+            <th class="i18n-lan-remark"></th>
         </tr>
     </thead>
     <tbody>
@@ -27,6 +28,7 @@
               <a data-index="<%:=i%>" class="layui-btn layui-btn-mini mapping-edit"></a>
               <a data-index="<%:=i%>" class="layui-btn layui-btn-danger layui-btn-mini mapping-delete"></a>
             </td>
+            <td><%:=data[i].remark%></td>
         </tr>
     <%}%>
     </tbody>
@@ -48,6 +50,7 @@
 	$(".i18n-lan-inetport").html($.i18n.prop('lan.inetport'));
 	$(".i18n-lan-ip").html($.i18n.prop('lan.ip'));
 	$(".i18n-lan-options").html($.i18n.prop('public.options'));
+	$(".i18n-lan-remark").html($.i18n.prop('public.remark'));
 	$(".mapping-edit").html($.i18n.prop('public.edit'));
 	$(".mapping-delete").html($.i18n.prop('public.delete'));
 	$(".mapping-config").click(function() {
