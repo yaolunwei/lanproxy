@@ -196,7 +196,11 @@
             <dl class="layui-nav-child">
             <%for(var i = 0; i < list.length; i++) {%>
                 <dd>
+                    <% if(list[i].isAutoAdd){ %>
+                    <a href="javascript:;" class="menu-item" data-index="<%:=i%>"><%:=list[i].name%><span class="layui-badge-dot layui-bg-black"></span></a>
+                    <% } else { %>
                     <a href="javascript:;" class="menu-item" data-index="<%:=i%>"><%:=list[i].name%></a>
+                    <% }%>
                 </dd>
             <%}%>
             </dl>

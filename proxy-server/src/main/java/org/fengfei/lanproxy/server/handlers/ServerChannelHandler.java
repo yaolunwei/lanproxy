@@ -1,5 +1,6 @@
 package org.fengfei.lanproxy.server.handlers;
 
+import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,6 +8,8 @@ import java.util.List;
 import com.google.gson.reflect.TypeToken;
 import io.netty.util.internal.StringUtil;
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.common.Location;
+import org.fengfei.lanproxy.common.LocationUtils;
 import org.fengfei.lanproxy.protocol.AuthData;
 import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
@@ -34,7 +37,6 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
-        System.out.println("Server ProxyMessage received " + proxyMessage.getType());
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
             case ProxyMessage.TYPE_HEARTBEAT:
@@ -139,41 +141,55 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     private void handleAuthMessage(ChannelHandlerContext ctx, ProxyMessage proxyMessage) {
         String clientKey = proxyMessage.getUri();
-        List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
-        if (ports == null) {
+
+        byte[] data = proxyMessage.getData();
+        AuthData authData = null;
+        if (data!=null && data.length!=0) {
+            authData = JsonUtil.json2object(new String(data, StandardCharsets.UTF_8), new TypeToken<AuthData>(){});
+        }
+
+        ProxyConfig.Client client = ProxyConfig.getInstance().getClient(clientKey);
+
+        if (client==null) {
             // 未认证自动添加
-            ProxyConfig.Client client = new ProxyConfig.Client();
+            client = new ProxyConfig.Client();
             client.setClientKey(clientKey);
             client.setName(clientKey);
-
-            byte[] data = proxyMessage.getData();
-            if (proxyMessage.getData()!=null && data.length != 0) {
-                AuthData authData = JsonUtil.json2object(new String(data, StandardCharsets.UTF_8), new TypeToken<AuthData>(){});
-                if (authData!=null) {
-                    if (!StringUtil.isNullOrEmpty(authData.getName())) {
-                        client.setName(authData.getName());
-                    }
-                    List<ProxyConfig.ClientProxyMapping> proxyMappings = new ArrayList<>();
-                    if (!StringUtil.isNullOrEmpty(authData.getProxyLan())) {
-                        ProxyConfig.ClientProxyMapping mapping = new ProxyConfig.ClientProxyMapping();
-                        mapping.setInetPort(ProxyConfig.getInstance().generateFreePort());
-                        mapping.setLan(authData.getProxyLan());
-                        mapping.setName("Default");
-                        proxyMappings.add(mapping);
-                    }
-                    client.setProxyMappings(proxyMappings);
-
-                    client.setLongitude(authData.getLongitude());
-                    client.setLatitude(authData.getLatitude());
-                    client.setStatus(1);
+            client.setAutoAdd(true);
+            if (authData!=null) {
+                if (!StringUtil.isNullOrEmpty(authData.getName())) {
+                    client.setName(authData.getName());
                 }
+                List<ProxyConfig.ClientProxyMapping> proxyMappings = new ArrayList<>();
+                if (!StringUtil.isNullOrEmpty(authData.getProxyLan())) {
+                    ProxyConfig.ClientProxyMapping mapping = new ProxyConfig.ClientProxyMapping();
+                    mapping.setInetPort(ProxyConfig.getInstance().generateFreePort());
+                    mapping.setLan(authData.getProxyLan());
+                    mapping.setName("Default");
+                    proxyMappings.add(mapping);
+                }
+                client.setProxyMappings(proxyMappings);
             }
 
-            ProxyConfig.getInstance().add(client);
             logger.info("Auto add client {}, {}", clientKey, ctx.channel());
+            ProxyConfig.getInstance().add(client);
             ctx.channel().close();
             return;
         }
+
+        if (authData!=null) {
+            if (authData.getLongitude()==null || authData.getLatitude()==null) {
+                InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
+                String clientIP = insocket.getAddress().getHostAddress();
+                Location location = LocationUtils.getLocationAuto(clientIP);
+                client.setLocation(location);
+            } else {
+                Location location = LocationUtils.getLocation(authData.getLongitude(), authData.getLatitude());
+                client.setLocation(location);
+            }
+        }
+
+        List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
 
         Channel channel = ProxyChannelManager.getCmdChannel(clientKey);
         if (channel != null) {

@@ -11,6 +11,7 @@ import java.util.*;
 
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.common.Location;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,6 +68,8 @@ public class ProxyConfig implements Serializable {
 
     /** 更新配置后保证在其他线程即时生效 */
     private static ProxyConfig instance = new ProxyConfig();;
+
+   private volatile  Map<String, Client> clientMapping = new HashMap<>();
 
     /** 代理服务器为各个代理客户端（key）开启对应的端口列表（value） */
     private volatile Map<String, List<Integer>> clientInetPortMapping = new HashMap<String, List<Integer>>();
@@ -188,6 +191,7 @@ public class ProxyConfig implements Serializable {
             if (clientInetPortMapping.containsKey(clientKey)) {
                 throw new IllegalArgumentException("密钥同时作为客户端标识，不能重复： " + clientKey);
             }
+            clientMapping.put(clientKey, client);
             List<ClientProxyMapping> mappings = client.getProxyMappings();
             List<Integer> ports = new ArrayList<Integer>();
             clientInetPortMapping.put(clientKey, ports);
@@ -280,6 +284,10 @@ public class ProxyConfig implements Serializable {
         return clientInetPortMapping.get(clientKey);
     }
 
+    public Client getClient(String clientKey) {
+        return clientMapping.get(clientKey);
+    }
+
     /**
      * 获取所有的clientKey
      *
@@ -367,14 +375,15 @@ public class ProxyConfig implements Serializable {
         /** 最后在线时间 **/
         private String lastOnlineTime;
 
-        // 经度
-        private double longitude;
+        // 位置
+        private Location location = new Location();
 
-        // 纬度
-        private double latitude;
+        // 是否自动添加
+        private boolean isAutoAdd;
 
         // 备注
         private String remark;
+
 
         public String getClientKey() {
             return clientKey;
@@ -416,20 +425,20 @@ public class ProxyConfig implements Serializable {
             this.lastOnlineTime = lastOnlineTime;
         }
 
-        public double getLongitude() {
-            return longitude;
+        public Location getLocation() {
+            return location;
         }
 
-        public void setLongitude(double longitude) {
-            this.longitude = longitude;
+        public void setLocation(Location location) {
+            this.location = location;
         }
 
-        public double getLatitude() {
-            return latitude;
+        public boolean isAutoAdd() {
+            return isAutoAdd;
         }
 
-        public void setLatitude(double latitude) {
-            this.latitude = latitude;
+        public void setAutoAdd(boolean autoAdd) {
+            isAutoAdd = autoAdd;
         }
 
         public String getRemark() {

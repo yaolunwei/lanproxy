@@ -12,10 +12,10 @@ public class AuthData {
     private String proxyLan;
 
     // 经度
-    private double longitude;
+    private String longitude;
 
     // 纬度
-    private double latitude;
+    private String latitude;
 
     public String getName() {
         return name;
@@ -33,19 +33,19 @@ public class AuthData {
         this.proxyLan = proxyLan;
     }
 
-    public double getLongitude() {
+    public String getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(String longitude) {
         this.longitude = longitude;
     }
 
-    public double getLatitude() {
+    public String getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(String latitude) {
         this.latitude = latitude;
     }
 }

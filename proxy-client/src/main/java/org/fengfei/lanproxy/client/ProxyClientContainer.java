@@ -117,8 +117,8 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     AuthData authData = new AuthData();
                     authData.setName(config.getStringValue("client.name", proxyMessage.getUri()));
                     authData.setProxyLan(config.getStringValue("proxy.lan"));
-                    authData.setLongitude(config.getDoubleValue("location.longitude", 0d));
-                    authData.setLatitude(config.getDoubleValue("location.latitude", 0d));
+                    authData.setLongitude(config.getStringValue("location.longitude"));
+                    authData.setLatitude(config.getStringValue("location.latitude"));
 
                     proxyMessage.setData(JsonUtil.object2json(authData).getBytes(StandardCharsets.UTF_8));
                     future.channel().writeAndFlush(proxyMessage);
