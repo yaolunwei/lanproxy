@@ -31,6 +31,7 @@
 
 		<div class="layui-body"></div>
 
+
 		<div class="layui-footer footer"></div>
 	</div>
 	<script src="/lanproxy-config/layui/layui.js"></script>
@@ -167,7 +168,7 @@
             callback : function() {//加载成功后设置显示内容
                 $('title').html($.i18n.prop('title'));
                 $('.layui-logo').html($.i18n.prop('layui-logo'));
-                $(".layui-footer").html($.i18n.prop('fcopyright'));
+                $(".layui-footer").html($.i18n.prop('fcopyright') + '&nbsp;&nbsp;&nbsp;&nbsp; <a style="color: black" href="client.zip">客户端下载</a>\n');
                 $(".logout").html($.i18n.prop('logout'));
                 layui.use('layer', function() {
                     window.layer = layui.layer;
