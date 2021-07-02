@@ -10,12 +10,10 @@ import org.fengfei.lanproxy.client.handlers.ClientChannelHandler;
 import org.fengfei.lanproxy.client.handlers.RealServerChannelHandler;
 import org.fengfei.lanproxy.client.listener.ChannelStatusListener;
 import org.fengfei.lanproxy.common.Config;
+import org.fengfei.lanproxy.common.JsonUtil;
 import org.fengfei.lanproxy.common.container.Container;
 import org.fengfei.lanproxy.common.container.ContainerHelper;
-import org.fengfei.lanproxy.protocol.IdleCheckHandler;
-import org.fengfei.lanproxy.protocol.ProxyMessage;
-import org.fengfei.lanproxy.protocol.ProxyMessageDecoder;
-import org.fengfei.lanproxy.protocol.ProxyMessageEncoder;
+import org.fengfei.lanproxy.protocol.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -115,7 +113,14 @@ public class ProxyClientContainer implements Container, ChannelStatusListener {
                     ProxyMessage proxyMessage = new ProxyMessage();
                     proxyMessage.setType(ProxyMessage.C_TYPE_AUTH);
                     proxyMessage.setUri(config.getStringValue("client.key"));
-                    proxyMessage.setData(config.getStringValue("client.name", proxyMessage.getUri()).getBytes(StandardCharsets.UTF_8));
+
+                    AuthData authData = new AuthData();
+                    authData.setName(config.getStringValue("client.name", proxyMessage.getUri()));
+                    authData.setProxyLan(config.getStringValue("proxy.lan"));
+                    authData.setLongitude(config.getDoubleValue("location.longitude", 0d));
+                    authData.setLatitude(config.getDoubleValue("location.latitude", 0d));
+
+                    proxyMessage.setData(JsonUtil.object2json(authData).getBytes(StandardCharsets.UTF_8));
                     future.channel().writeAndFlush(proxyMessage);
                     sleepTimeMill = 1000;
                     logger.info("connect proxy server success, {}", future.channel());

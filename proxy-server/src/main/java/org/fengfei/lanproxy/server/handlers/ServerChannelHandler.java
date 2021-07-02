@@ -4,6 +4,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.reflect.TypeToken;
+import io.netty.util.internal.StringUtil;
+import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.protocol.AuthData;
 import org.fengfei.lanproxy.protocol.Constants;
 import org.fengfei.lanproxy.protocol.ProxyMessage;
 import org.fengfei.lanproxy.server.ProxyChannelManager;
@@ -30,6 +34,7 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ProxyMessage proxyMessage) throws Exception {
+        System.out.println("Server ProxyMessage received " + proxyMessage.getType());
         logger.debug("ProxyMessage received {}", proxyMessage.getType());
         switch (proxyMessage.getType()) {
             case ProxyMessage.TYPE_HEARTBEAT:
@@ -136,9 +141,35 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
         String clientKey = proxyMessage.getUri();
         List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
         if (ports == null) {
-            String clientName = new String(proxyMessage.getData(), StandardCharsets.UTF_8);
-            ProxyConfig.getInstance().add(clientName, clientKey, 1, new ArrayList<ProxyConfig.ClientProxyMapping>());
-//            logger.info("error clientKey {}, {}", clientKey, ctx.channel());
+            // 未认证自动添加
+            ProxyConfig.Client client = new ProxyConfig.Client();
+            client.setClientKey(clientKey);
+            client.setName(clientKey);
+
+            byte[] data = proxyMessage.getData();
+            if (proxyMessage.getData()!=null && data.length != 0) {
+                AuthData authData = JsonUtil.json2object(new String(data, StandardCharsets.UTF_8), new TypeToken<AuthData>(){});
+                if (authData!=null) {
+                    if (!StringUtil.isNullOrEmpty(authData.getName())) {
+                        client.setName(authData.getName());
+                    }
+                    List<ProxyConfig.ClientProxyMapping> proxyMappings = new ArrayList<>();
+                    if (!StringUtil.isNullOrEmpty(authData.getProxyLan())) {
+                        ProxyConfig.ClientProxyMapping mapping = new ProxyConfig.ClientProxyMapping();
+                        mapping.setInetPort(ProxyConfig.getInstance().generateFreePort());
+                        mapping.setLan(authData.getProxyLan());
+                        mapping.setName("Default");
+                        proxyMappings.add(mapping);
+                    }
+                    client.setProxyMappings(proxyMappings);
+
+                    client.setLongitude(authData.getLongitude());
+                    client.setLatitude(authData.getLatitude());
+                    client.setStatus(1);
+                }
+            }
+
+            ProxyConfig.getInstance().add(client);
             logger.info("Auto add client {}, {}", clientKey, ctx.channel());
             ctx.channel().close();
             return;

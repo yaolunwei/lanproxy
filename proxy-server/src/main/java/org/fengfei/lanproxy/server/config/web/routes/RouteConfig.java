@@ -2,6 +2,8 @@ package org.fengfei.lanproxy.server.config.web.routes;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -36,6 +38,8 @@ public class RouteConfig {
     protected static final String AUTH_COOKIE_KEY = "token";
 
     private static Logger logger = LoggerFactory.getLogger(RouteConfig.class);
+
+    private static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     /** 管理员不能同时在多个地方登录 */
     private static String token;
@@ -86,6 +90,7 @@ public class RouteConfig {
                     Channel channel = ProxyChannelManager.getCmdChannel(client.getClientKey());
                     if (channel != null) {
                         client.setStatus(1);// online
+                        client.setLastOnlineTime(simpleDateFormat.format(new Date()));
                     } else {
                         client.setStatus(0);// offline
                     }

@@ -5,15 +5,13 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 import org.fengfei.lanproxy.common.Config;
 import org.fengfei.lanproxy.common.JsonUtil;
+import org.fengfei.lanproxy.server.ProxyChannelManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -238,18 +236,10 @@ public class ProxyConfig implements Serializable {
     public void add(Client client) {
         if (client!=null && client.clientKey!=null) {
             clients.add(client);
+            String json = JsonUtil.object2json(clients);
+            update(json);
         }
-        String json = JsonUtil.object2json(clients);
-        update(json);
-    }
 
-    public void add(String name, String clientKey, int status, List<ClientProxyMapping> mappings) {
-        Client client = new Client();
-        client.name = name;
-        client.clientKey = clientKey;
-        client.status = status;
-        client.proxyMappings = mappings;
-        add(client);
     }
 
     /**
@@ -347,8 +337,8 @@ public class ProxyConfig implements Serializable {
         }
 
         return null;
-    };
-
+    }
+    
     public static ProxyConfig getInstance() {
         return instance;
     }
@@ -373,6 +363,18 @@ public class ProxyConfig implements Serializable {
         private List<ClientProxyMapping> proxyMappings;
 
         private int status;
+
+        /** 最后在线时间 **/
+        private String lastOnlineTime;
+
+        // 经度
+        private double longitude;
+
+        // 纬度
+        private double latitude;
+
+        // 备注
+        private String remark;
 
         public String getClientKey() {
             return clientKey;
@@ -406,6 +408,37 @@ public class ProxyConfig implements Serializable {
             this.status = status;
         }
 
+        public String getLastOnlineTime() {
+            return lastOnlineTime;
+        }
+
+        public void setLastOnlineTime(String lastOnlineTime) {
+            this.lastOnlineTime = lastOnlineTime;
+        }
+
+        public double getLongitude() {
+            return longitude;
+        }
+
+        public void setLongitude(double longitude) {
+            this.longitude = longitude;
+        }
+
+        public double getLatitude() {
+            return latitude;
+        }
+
+        public void setLatitude(double latitude) {
+            this.latitude = latitude;
+        }
+
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
     }
 
     /**
@@ -424,6 +457,9 @@ public class ProxyConfig implements Serializable {
 
         /** 备注名称 */
         private String name;
+
+        // 备注
+        private String remark;
 
         public Integer getInetPort() {
             return inetPort;
@@ -449,6 +485,13 @@ public class ProxyConfig implements Serializable {
             this.name = name;
         }
 
+        public String getRemark() {
+            return remark;
+        }
+
+        public void setRemark(String remark) {
+            this.remark = remark;
+        }
     }
 
     /**
