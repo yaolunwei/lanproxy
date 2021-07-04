@@ -155,12 +155,13 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             client = new ProxyConfig.Client();
             client.setClientKey(clientKey);
             client.setName(clientKey);
+            client.setStatus(1);
             client.setAutoAdd(true);
+            List<ProxyConfig.ClientProxyMapping> proxyMappings = new ArrayList<>();
             if (authData!=null) {
                 if (!StringUtil.isNullOrEmpty(authData.getName())) {
                     client.setName(authData.getName());
                 }
-                List<ProxyConfig.ClientProxyMapping> proxyMappings = new ArrayList<>();
                 if (!StringUtil.isNullOrEmpty(authData.getProxyLan())) {
                     ProxyConfig.ClientProxyMapping mapping = new ProxyConfig.ClientProxyMapping();
                     mapping.setInetPort(ProxyConfig.getInstance().generateFreePort());
@@ -168,8 +169,9 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
                     mapping.setName("Default");
                     proxyMappings.add(mapping);
                 }
-                client.setProxyMappings(proxyMappings);
+
             }
+            client.setProxyMappings(proxyMappings);
 
             logger.info("Auto add client {}, {}", clientKey, ctx.channel());
             ProxyConfig.getInstance().add(client);
@@ -177,16 +179,15 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        if (authData!=null) {
-            if (authData.getLongitude()==null || authData.getLatitude()==null) {
-                InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
-                String clientIP = insocket.getAddress().getHostAddress();
-                Location location = LocationUtils.getLocationAuto(clientIP);
-                client.setLocation(location);
-            } else {
-                Location location = LocationUtils.getLocation(authData.getLongitude(), authData.getLatitude());
-                client.setLocation(location);
-            }
+        if (authData==null || authData.getLongitude()==null || authData.getLatitude()==null) {
+            InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
+            String clientIP = insocket.getAddress().getHostAddress();
+            logger.info("Remote client address {}, {}", clientKey, clientIP);
+            Location location = LocationUtils.getLocationAuto(clientIP);
+            client.setLocation(location);
+        } else {
+            Location location = LocationUtils.getLocation(authData.getLongitude(), authData.getLatitude());
+            client.setLocation(location);
         }
 
         List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
