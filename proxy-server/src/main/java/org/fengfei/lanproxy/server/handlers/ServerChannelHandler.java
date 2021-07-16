@@ -179,16 +179,11 @@ public class ServerChannelHandler extends SimpleChannelInboundHandler<ProxyMessa
             return;
         }
 
-        if (authData==null || authData.getLongitude()==null || authData.getLatitude()==null) {
-            InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
-            String clientIP = insocket.getAddress().getHostAddress();
-            logger.info("Remote client address {}, {}", clientKey, clientIP);
-            Location location = LocationUtils.getLocationAuto(clientIP);
-            client.setLocation(location);
-        } else {
-            Location location = LocationUtils.getLocation(authData.getLongitude(), authData.getLatitude());
-            client.setLocation(location);
-        }
+        InetSocketAddress insocket = (InetSocketAddress) ctx.channel().remoteAddress();
+        String clientIP = insocket.getAddress().getHostAddress();
+        logger.info("Remote client address {}, {}", clientKey, clientIP);
+        Location location = LocationUtils.getLocation(clientIP);
+        client.setLocation(location);
 
         List<Integer> ports = ProxyConfig.getInstance().getClientInetPorts(clientKey);
 
